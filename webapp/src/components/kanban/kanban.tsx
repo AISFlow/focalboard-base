@@ -8,8 +8,6 @@ import withScrolling, {createHorizontalStrength, createVerticalStrength} from 'r
 
 import {useAppSelector} from '../../store/hooks'
 
-import {Position} from '../cardDetail/cardDetailContents'
-
 import {Board, IPropertyOption, IPropertyTemplate, BoardGroup} from '../../blocks/board'
 import {Card} from '../../blocks/card'
 import {BoardView} from '../../blocks/boardView'
@@ -64,8 +62,6 @@ const Kanban = (props: Props) => {
     const cardTemplates: Card[] = useAppSelector(getCurrentBoardTemplates)
     const {board, activeView, cards, groupByProperty, visibleGroups, hiddenGroups, hiddenCardsCount} = props
     const [defaultTemplateID, setDefaultTemplateID] = useState<string>()
-
-    const ref = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
         if (activeView.fields.defaultTemplateId) {
@@ -201,7 +197,8 @@ const Kanban = (props: Props) => {
 
         // Reorder the column headers
         const newContentOrder: Array<string | string[]> = [...visibleOptionIds];
-        [newContentOrder[dragIndex], newContentOrder[hoverIndex]] = [newContentOrder[hoverIndex], newContentOrder[dragIndex]];
+        const [removedItem] = newContentOrder.splice(dragIndex, 1); // delete dragged element
+        newContentOrder.splice(hoverIndex, 0, removedItem) // insert dragged element
 
         await mutator.changeViewVisibleOptionIds(props.board.id, activeView.id, activeView.fields.visibleOptionIds, newContentOrder as string[])
 

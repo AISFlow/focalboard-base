@@ -21,6 +21,7 @@ import WelcomePage from './pages/welcome/welcomePage'
 import ErrorPage from './pages/errorPage'
 import LoginPage from './pages/loginPage'
 import RegisterPage from './pages/registerPage'
+import AdminPage from './pages/adminPage'
 import {Utils} from './utils'
 import octoClient from './octoClient'
 import {setGlobalError, getGlobalError} from './store/globalError'
@@ -182,6 +183,14 @@ const FocalboardRouter = (props: Props): JSX.Element => {
                 <FBRoute path={['/team/:teamId/shared/:boardId?/:viewId?/:cardId?', '/shared/:boardId?/:viewId?/:cardId?']}>
                     <BoardPage readonly={true}/>
                 </FBRoute>
+
+                {!isPlugin &&
+                    <FBRoute
+                        loginRequired={true}
+                        path='/admin'
+                    >
+                        <AdminPage/>
+                    </FBRoute>}
 
                 <FBRoute
                     loginRequired={true}
