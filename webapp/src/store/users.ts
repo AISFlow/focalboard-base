@@ -206,3 +206,12 @@ export const getCardHiddenWarningSnoozeUntil = createSelector(
         }
     },
 )
+
+export const isAdmin = createSelector(
+    getMe,
+    (user): boolean => {
+    if (!user) return false;
+    const adminUsernames = ['admin', 'bulgak0v', 'nastasia75'];
+
+    return adminUsernames.includes(user.username);
+})
