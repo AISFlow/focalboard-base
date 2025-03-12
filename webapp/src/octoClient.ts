@@ -1119,6 +1119,18 @@ class OctoClient {
             headers: this.headers(),
         })
     }
+
+    // Delete user
+    private async delete(path: string): Promise<Response> {
+        return fetch(this.getBaseURL() + '/api/v2' + path, {
+            method: 'DELETE',
+            headers: this.headers(),
+        })
+    }
+
+    async deleteUser(userId: string): Promise<Response> {
+        return this.delete(`/users/${encodeURIComponent(userId)}`)
+    }
 }
 
 const octoClient = new OctoClient()

@@ -23,20 +23,20 @@ const User = (props: Props) => {
     const intl = useIntl()
     const [showConfirmationDialogBox, setShowConfirmationDialogBox] = useState<boolean>(false)
 
-    const handleDeleteCard = useCallback(() => {
-        mutator.deleteBlock(card, 'delete card')
-    }, [card, board.id])
+    const handleDeleteUser = useCallback(() => {
+        mutator.deleteUser(user.id)
+    }, [user.id])
 
     const confirmDialogProps: ConfirmationDialogBoxProps = useMemo(() => {
         return {
             heading: intl.formatMessage({id: 'CardDialog.delete-confirmation-dialog-heading', defaultMessage: 'Confirm user delete!'}),
             confirmButtonText: intl.formatMessage({id: 'CardDialog.delete-confirmation-dialog-button-text', defaultMessage: 'Delete'}),
-            onConfirm: handleDeleteCard,
+            onConfirm: handleDeleteUser,
             onClose: () => {
                 setShowConfirmationDialogBox(false)
             },
         }
-    }, [handleDeleteCard])
+    }, [handleDeleteUser])
 
     return (
         <div className='user'>
@@ -52,9 +52,7 @@ const User = (props: Props) => {
                 size='medium'
                 title='Delete user'
                 icon={ <DeleteIcon/>}
-                onClick={() => {
-                    console.log('Not implemented yet')
-                }}
+                onClick={() => setShowConfirmationDialogBox(true)}
             >
                 <FormattedMessage
                     id='Admin.deleteUser'

@@ -1282,6 +1282,20 @@ class Mutator {
     async redo() {
         await undoManager.redo()
     }
+
+    async deleteUser(userId: string): Promise<void> {
+        await undoManager.perform(
+            async () => {
+                await octoClient.deleteUser(userId)
+            },
+            async () => {
+                // Note: User deletion cannot be undone
+                Utils.assertFailure('Unable to undo user deletion')
+            },
+            'delete user',
+            this.undoGroupId,
+        )
+    }
 }
 
 const mutator = new Mutator()

@@ -114,3 +114,7 @@ func (a *App) SetCardLimit(cardLimit int) {
 func (a *App) GetLicense() *mm_model.License {
 	return a.store.GetLicense()
 }
+
+func (a *App) DeleteUser(userID string) error {
+	return a.store.DeleteUser(userID)
+}
