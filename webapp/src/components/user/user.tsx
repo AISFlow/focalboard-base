@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 import {FormattedMessage, useIntl} from 'react-intl';
 
 import {IUser} from '../../user';
@@ -6,6 +6,8 @@ import {Utils} from '../../utils';
 
 import Button from '../../widgets/buttons/button';
 import DeleteIcon from '../../widgets/icons/delete';
+import ConfirmationDialogBox, {ConfirmationDialogBoxProps} from '../confirmationDialogBox'
+import mutator from '../../mutator'
 
 import './user.scss'
 
@@ -19,6 +21,22 @@ const User = (props: Props) => {
 
     const {user, teammateNameDisplay, isMe} = props
     const intl = useIntl()
+    const [showConfirmationDialogBox, setShowConfirmationDialogBox] = useState<boolean>(false)
+
+    const handleDeleteCard = useCallback(() => {
+        mutator.deleteBlock(card, 'delete card')
+    }, [card, board.id])
+
+    const confirmDialogProps: ConfirmationDialogBoxProps = useMemo(() => {
+        return {
+            heading: intl.formatMessage({id: 'CardDialog.delete-confirmation-dialog-heading', defaultMessage: 'Confirm user delete!'}),
+            confirmButtonText: intl.formatMessage({id: 'CardDialog.delete-confirmation-dialog-button-text', defaultMessage: 'Delete'}),
+            onConfirm: handleDeleteCard,
+            onClose: () => {
+                setShowConfirmationDialogBox(false)
+            },
+        }
+    }, [handleDeleteCard])
 
     return (
         <div className='user'>
@@ -43,6 +61,7 @@ const User = (props: Props) => {
                     defaultMessage='Delete user'
                 />
             </Button>
+            {showConfirmationDialogBox && <ConfirmationDialogBox dialogBox={confirmDialogProps}/>}
         </div>
     );
 };

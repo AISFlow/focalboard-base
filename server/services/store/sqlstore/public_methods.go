@@ -588,6 +588,11 @@ func (s *SQLStore) GetUserPreferences(userID string) (mmModel.Preferences, error
 
 }
 
+func (s *SQLStore) DeleteUser(userID string) (error) {
+	return s.deleteUser(s.db, userID)
+
+}
+
 func (s *SQLStore) GetUserTimezone(userID string) (string, error) {
 	return s.getUserTimezone(s.db, userID)
 

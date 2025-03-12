@@ -467,3 +467,28 @@ func (s *SQLStore) preferencesFromRows(rows *sql.Rows) ([]mmModel.Preference, er
 
 	return preferences, nil
 }
+
+func (s *SQLStore) deleteUser(db sq.BaseRunner, userID string) error {
+	query := s.getQueryBuilder(db).
+		Delete("userid", "category", "name", "value").
+		From(s.tablePrefix + "preferences").
+		Where(sq.Eq{
+			"userid":   userID,
+			"category": model.PreferencesCategoryFocalboard,
+		})
+
+	rows, err := query.Query()
+	if err != nil {
+		s.logger.Error("failed to fetch user preferences", mlog.String("user_id", userID), mlog.Err(err))
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	preferences, err := s.preferencesFromRows(rows)
+	if err != nil {
+		return nil, err
+	}
+
+	return preferences, nil
+}

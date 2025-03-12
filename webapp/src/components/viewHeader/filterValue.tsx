@@ -56,6 +56,7 @@ const filterValue = (props: Props): JSX.Element|null => {
                 value={value}
                 placeholderText={intl.formatMessage({id: 'FilterByText.placeholder', defaultMessage: 'filter text'})}
                 onSave={() => {
+                    console.log("save");
                     const filterIndex = view.fields.filter.filters.indexOf(filter)
                     Utils.assert(filterIndex >= 0, "Can't find filter")
 
@@ -64,6 +65,7 @@ const filterValue = (props: Props): JSX.Element|null => {
                     Utils.assert(newFilter, `No filter at index ${filterIndex}`)
 
                     newFilter.values = [value]
+                    console.log(newFilter.values);
                     dispatch(updateViewFilter(filterGroup))
                 }}
             />

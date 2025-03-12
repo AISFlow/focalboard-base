@@ -70,6 +70,7 @@ type Store interface {
 	SearchUsersByTeam(teamID string, searchQuery string, asGuestID string, excludeBots bool, showEmail, showName bool) ([]*model.User, error)
 	PatchUserPreferences(userID string, patch model.UserPreferencesPatch) (mmModel.Preferences, error)
 	GetUserPreferences(userID string) (mmModel.Preferences, error)
+	DeleteUser(userID string) error
 
 	GetActiveUserCount(updatedSecondsAgo int64) (int, error)
 	GetSession(token string, expireTime int64) (*model.Session, error)

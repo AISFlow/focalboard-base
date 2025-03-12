@@ -392,7 +392,9 @@ export const getCurrentViewCardsSortedFilteredAndGroupedWithoutLimit = createSel
         if (searchText) {
             result = searchFilterCards(result, board, searchText)
         }
+        Utils.log('before sort')
         result = sortCards(result, lastCommentByCard, board, view, users)
+        Utils.log('after sort')
         return result
     },
 )
