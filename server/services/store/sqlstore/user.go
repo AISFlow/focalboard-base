@@ -469,7 +469,13 @@ func (s *SQLStore) preferencesFromRows(rows *sql.Rows) ([]mmModel.Preference, er
 }
 
 func (s *SQLStore) deleteUser(db sq.BaseRunner, userID string) error {
-	// First delete from board_members
+	// TODO: Need to handle user deletion from blocks table
+	// This is non-trivial because:
+	// 1. Users can be referenced in block properties
+	// 2. Users can be authors/creators of blocks
+	// 3. Need to determine whether to delete blocks or just update references
+
+	// Delete from board_members
 	memberQuery := s.getQueryBuilder(db).
 		Delete(s.tablePrefix + "board_members").
 		Where(sq.Eq{"user_id": userID})
@@ -478,7 +484,7 @@ func (s *SQLStore) deleteUser(db sq.BaseRunner, userID string) error {
 		return fmt.Errorf("failed to delete user's board memberships: %w", err)
 	}
 
-	// Then delete the user
+	// Delete the user
 	userQuery := s.getQueryBuilder(db).
 		Delete(s.tablePrefix + "users").
 		Where(sq.Eq{"id": userID})
