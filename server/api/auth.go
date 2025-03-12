@@ -579,7 +579,45 @@ func (a *API) handleChangeUsername(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *API) handleDeleteUser(w http.ResponseWriter, r *http.Request) {
+	// swagger:operation DELETE /users/{userID}/delete deleteUser
+	//
+	// Delete a user
+	//
+	// ---
+	// produces:
+	// - application/json
+	// parameters:
+	// - name: userID
+	//   in: path
+	//   description: User ID
+	//   required: true
+	//   type: string
+	// security:
+	// - BearerAuth: []
+	// responses:
+	//   '200':
+	//     description: success
+	//   default:
+	//     description: internal error
+	//     schema:
+	//       "$ref": "#/definitions/ErrorResponse"
+
+	if a.MattermostAuth {
+		a.errorResponse(w, r, model.NewErrNotImplemented("not permitted in plugin mode"))
+		return
+	}
+
+	if len(a.singleUserToken) > 0 {
+		// Not permitted in single-user mode
+		a.errorResponse(w, r, model.NewErrUnauthorized("not permitted in single-user mode"))
+		return
+	}
+
 	userID := mux.Vars(r)["userID"]
+
+	auditRec := a.makeAuditRecord(r, "deleteUser", audit.Fail)
+	defer a.audit.LogRecord(audit.LevelAuth, auditRec)
+	auditRec.AddMeta("userID", userID)
 
 	if err := a.app.DeleteUser(userID); err != nil {
 		a.errorResponse(w, r, err)
@@ -587,6 +625,7 @@ func (a *API) handleDeleteUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	jsonStringResponse(w, http.StatusOK, "{}")
+	auditRec.Success()
 }
 
 func (a *API) sessionRequired(handler func(w http.ResponseWriter, r *http.Request)) func(w http.ResponseWriter, r *http.Request) {
