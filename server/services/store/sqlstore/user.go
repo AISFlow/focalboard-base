@@ -469,11 +469,21 @@ func (s *SQLStore) preferencesFromRows(rows *sql.Rows) ([]mmModel.Preference, er
 }
 
 func (s *SQLStore) deleteUser(db sq.BaseRunner, userID string) error {
-	query := s.getQueryBuilder(db).
+	// First delete from board_members
+	memberQuery := s.getQueryBuilder(db).
+		Delete(s.tablePrefix + "board_members").
+		Where(sq.Eq{"user_id": userID})
+
+	if _, err := memberQuery.Exec(); err != nil {
+		return fmt.Errorf("failed to delete user's board memberships: %w", err)
+	}
+
+	// Then delete the user
+	userQuery := s.getQueryBuilder(db).
 		Delete(s.tablePrefix + "users").
 		Where(sq.Eq{"id": userID})
 
-	result, err := query.Exec()
+	result, err := userQuery.Exec()
 	if err != nil {
 		return fmt.Errorf("failed to delete user: %w", err)
 	}

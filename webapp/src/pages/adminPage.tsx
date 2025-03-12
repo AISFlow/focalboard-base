@@ -37,6 +37,10 @@ const AdminPage = () => {
         setBoardTemplateSelectorOpen(false)
     }, [])
 
+    const handleUserDeleted = useCallback(async () => {
+        await fetchUsers()
+    }, [])
+
     return (
         <div className='AdminPage'>
             <Sidebar
@@ -58,6 +62,7 @@ const AdminPage = () => {
                                 user={user}
                                 teammateNameDisplay={clientConfig.teammateNameDisplay}
                                 isMe={me && user.id === me.id}
+                                onUserDeleted={handleUserDeleted}
                             />
                         </li>
                     ))}

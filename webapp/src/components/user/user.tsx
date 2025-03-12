@@ -15,6 +15,7 @@ type Props = {
     user: IUser,
     teammateNameDisplay: string,
     isMe?: boolean | null,
+    onUserDeleted: () => Promise<void>,
 }
 
 const User = (props: Props) => {
@@ -23,9 +24,11 @@ const User = (props: Props) => {
     const intl = useIntl()
     const [showConfirmationDialogBox, setShowConfirmationDialogBox] = useState<boolean>(false)
 
-    const handleDeleteUser = useCallback(() => {
-        mutator.deleteUser(user.id)
-    }, [user.id])
+    const handleDeleteUser = useCallback(async () => {
+        await mutator.deleteUser(user.id)
+        setShowConfirmationDialogBox(false)
+        await props.onUserDeleted()
+    }, [user.id, props.onUserDeleted])
 
     const confirmDialogProps: ConfirmationDialogBoxProps = useMemo(() => {
         return {
