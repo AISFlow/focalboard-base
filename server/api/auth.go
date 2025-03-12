@@ -28,6 +28,7 @@ func (a *API) registerAuthRoutes(r *mux.Router) {
 		r.HandleFunc("/users/{userID}/changepassword", a.sessionRequired(a.handleChangePassword)).Methods("POST")
 		r.HandleFunc("/users/{userID}/changeemail", a.sessionRequired(a.handleChangeEmail)).Methods("POST")
 		r.HandleFunc("/users/{userID}/changeusername", a.sessionRequired(a.handleChangeUsername)).Methods("POST")
+		r.HandleFunc("/users/{userID}/delete", a.adminRequired(a.handleDeleteUser)).Methods("DELETE")
 	}
 }
 
@@ -575,6 +576,17 @@ func (a *API) handleChangeUsername(w http.ResponseWriter, r *http.Request) {
 
 	jsonStringResponse(w, http.StatusOK, "{}")
 	auditRec.Success()
+}
+
+func (a *API) handleDeleteUser(w http.ResponseWriter, r *http.Request) {
+	userID := mux.Vars(r)["userID"]
+
+	if err := a.app.DeleteUser(userID); err != nil {
+		a.errorResponse(w, r, err)
+		return
+	}
+
+	jsonStringResponse(w, http.StatusOK, "{}")
 }
 
 func (a *API) sessionRequired(handler func(w http.ResponseWriter, r *http.Request)) func(w http.ResponseWriter, r *http.Request) {

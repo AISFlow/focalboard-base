@@ -19,7 +19,6 @@ func (a *API) registerUsersRoutes(r *mux.Router) {
 	r.HandleFunc("/users/{userID}", a.sessionRequired(a.handleGetUser)).Methods("GET")
 	r.HandleFunc("/users/{userID}/config", a.sessionRequired(a.handleUpdateUserConfig)).Methods(http.MethodPut)
 	r.HandleFunc("/users/me/config", a.sessionRequired(a.handleGetUserPreferences)).Methods(http.MethodGet)
-	r.HandleFunc("/users/{userID}", a.sessionRequired(a.handleDeleteUser)).Methods(http.MethodDelete)
 }
 
 func (a *API) handleGetUsersList(w http.ResponseWriter, r *http.Request) {
@@ -431,15 +430,4 @@ func (a *API) handleGetUserPreferences(w http.ResponseWriter, r *http.Request) {
 
 	jsonBytesResponse(w, http.StatusOK, data)
 	auditRec.Success()
-}
-
-func (a *API) handleDeleteUser(w http.ResponseWriter, r *http.Request) {
-	userID := mux.Vars(r)["userID"]
-
-	if err := a.app.DeleteUser(userID); err != nil {
-		a.errorResponse(w, r, err)
-		return
-	}
-
-	jsonStringResponse(w, http.StatusOK, "{}")
 }
