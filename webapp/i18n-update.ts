@@ -1,5 +1,4 @@
-// i18n-update.ts
-import * as fs from 'fs';
+import { promises as fs } from 'fs';
 import * as path from 'path';
 
 // Define an interface for the language file contents
@@ -12,66 +11,91 @@ const i18nDir: string = path.join(__dirname, 'i18n');
 // Define the reference file (en.json) path
 const enFilePath: string = path.join(i18nDir, 'en.json');
 
-// Read and parse the en.json file
-let enData: LangData;
-try {
-  enData = JSON.parse(fs.readFileSync(enFilePath, 'utf-8')) as LangData;
-} catch (err) {
-  console.error('Failed to read en.json:', err);
-  process.exit(1);
+/**
+ * Reads and parses a JSON file.
+ * @param filePath - The path to the JSON file.
+ * @returns Parsed JSON data as LangData.
+ */
+async function readJsonFile(filePath: string): Promise<LangData> {
+  try {
+    const data = await fs.readFile(filePath, 'utf-8');
+    return JSON.parse(data) as LangData;
+  } catch (error) {
+    throw new Error(`Failed to read or parse ${filePath}: ${error}`);
+  }
 }
 
-// Obtain the keys from en.json in the defined order
-const enKeys: string[] = Object.keys(enData);
+/**
+ * Updates a language file by ensuring all keys from the reference (en.json) exist,
+ * and sorts the keys based on the reference order followed by extra keys in alphabetical order.
+ * @param fileName - The language file name.
+ * @param enKeys - Keys from en.json in defined order.
+ * @param enData - The reference language data from en.json.
+ */
+async function updateLanguageFile(fileName: string, enKeys: string[], enData: LangData): Promise<void> {
+  const filePath = path.join(i18nDir, fileName);
+  let langData: LangData = {};
 
-// Read all JSON files in the i18n directory (excluding en.json) and update them accordingly
-fs.readdir(i18nDir, (err, files: string[]) => {
-  if (err) {
-    console.error('Failed to read the i18n directory:', err);
-    process.exit(1);
+  try {
+    langData = await readJsonFile(filePath);
+  } catch (error) {
+    console.warn(`Warning: ${fileName} could not be read. A new file will be created.`);
   }
 
-  files.filter((file: string) => file.endsWith('.json') && file !== 'en.json')
-       .forEach((fileName: string) => {
-         const filePath: string = path.join(i18nDir, fileName);
-         let langData: LangData = {};
+  let updated = false;
+  // Ensure all keys from en.json exist in langData
+  for (const key of enKeys) {
+    if (!Object.prototype.hasOwnProperty.call(langData, key)) {
+      langData[key] = enData[key];
+      updated = true;
+    }
+  }
 
-         // Attempt to read and parse the target language file
-         try {
-           langData = JSON.parse(fs.readFileSync(filePath, 'utf-8')) as LangData;
-         } catch (error) {
-           console.warn(`There was an issue reading ${fileName}. A new file will be created.`);
-         }
+  // Sort keys based on en.json order; extra keys appended alphabetically
+  const sortedLangData: LangData = {};
+  for (const key of enKeys) {
+    if (Object.prototype.hasOwnProperty.call(langData, key)) {
+      sortedLangData[key] = langData[key];
+    }
+  }
+  const extraKeys = Object.keys(langData)
+                          .filter(key => !enKeys.includes(key))
+                          .sort((a, b) => a.localeCompare(b));
+  for (const key of extraKeys) {
+    sortedLangData[key] = langData[key];
+  }
 
-         let updated: boolean = false;
-         // Ensure all keys from en.json exist in the target file
-         enKeys.forEach((key: string) => {
-           if (!Object.prototype.hasOwnProperty.call(langData, key)) {
-             langData[key] = enData[key];
-             updated = true;
-           }
-         });
+  // Write the updated and sorted data back to the file
+  await fs.writeFile(filePath, JSON.stringify(sortedLangData, null, 2), 'utf-8');
+  console.log(`${fileName} has been updated and keys sorted.` + (updated ? "" : " (No missing keys)"));
+}
 
-         // Sort keys based on the order in en.json; extra keys are appended alphabetically
-         const sortedLangData: LangData = {};
-         enKeys.forEach((key: string) => {
-           if (Object.prototype.hasOwnProperty.call(langData, key)) {
-             sortedLangData[key] = langData[key];
-           }
-         });
-         const extraKeys: string[] = Object.keys(langData)
-                                        .filter((key: string) => !enKeys.includes(key))
-                                        .sort((a: string, b: string) => a.localeCompare(b));
-         extraKeys.forEach((key: string) => {
-           sortedLangData[key] = langData[key];
-         });
+/**
+ * Orchestrates the update of all language files in the i18n directory.
+ */
+async function updateAllLanguageFiles(): Promise<void> {
+  let enData: LangData;
+  try {
+    enData = await readJsonFile(enFilePath);
+  } catch (error) {
+    console.error('Error:', error);
+    process.exit(1);
+  }
+  
+  const enKeys = Object.keys(enData);
 
-         // Write the updated and sorted data back to the language file
-         fs.writeFileSync(filePath, JSON.stringify(sortedLangData, null, 2), 'utf-8');
-         if (updated) {
-           console.log(`${fileName} has been updated and keys sorted.`);
-         } else {
-           console.log(`${fileName} is already up-to-date; keys have been sorted.`);
-         }
-       });
+  try {
+    const files = await fs.readdir(i18nDir);
+    const targetFiles = files.filter(file => file.endsWith('.json') && file !== 'en.json');
+
+    await Promise.all(targetFiles.map(file => updateLanguageFile(file, enKeys, enData)));
+  } catch (error) {
+    console.error('Error reading i18n directory:', error);
+    process.exit(1);
+  }
+}
+
+updateAllLanguageFiles().catch(error => {
+  console.error('Unexpected error:', error);
+  process.exit(1);
 });
