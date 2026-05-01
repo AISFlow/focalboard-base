@@ -11,7 +11,7 @@ import (
 	"github.com/mattermost/focalboard/server/model"
 	"github.com/mattermost/focalboard/server/utils"
 
-	"github.com/mattermost/mattermost-server/v6/shared/mlog"
+	"github.com/mattermost/mattermost/server/public/shared/mlog"
 )
 
 func (s *SQLStore) CloseRows(rows *sql.Rows) {
@@ -49,6 +49,12 @@ func PrepareNewTestDatabase() (dbType string, connectionString string, err error
 	var dbName string
 	var rootUser string
 
+	// Extract SSL mode from environment with default fallback
+	sslmode := strings.TrimSpace(os.Getenv("FOCALBOARD_DB_SSLMODE"))
+	if sslmode == "" {
+		sslmode = "disable"
+	}
+
 	if dbType == model.SqliteDBType {
 		file, err := os.CreateTemp("", "fbtest_*.db")
 		if err != nil {
@@ -57,49 +63,54 @@ func PrepareNewTestDatabase() (dbType string, connectionString string, err error
 		connectionString = file.Name() + "?_busy_timeout=5000"
 		_ = file.Close()
 	} else if port := strings.TrimSpace(os.Getenv("FOCALBOARD_STORE_TEST_DOCKER_PORT")); port != "" {
-		// docker unit tests take priority over any DSN env vars
+		// Prefer test containers over static DSN
 		var template string
 		switch dbType {
 		case model.MysqlDBType:
-			template = "%s:mostest@tcp(localhost:%s)/%s?charset=utf8mb4,utf8&writeTimeout=30s"
+			template = "%s:mostest@tcp(localhost:%s)/%s?charset=utf8mb4,utf8&writeTimeout=30s&tls=%s"
 			rootUser = "root"
 		case model.PostgresDBType:
-			template = "postgres://%s:mostest@localhost:%s/%s?sslmode=disable\u0026connect_timeout=10"
+			template = "postgres://%s:mostest@localhost:%s/%s?sslmode=%s&connect_timeout=10"
 			rootUser = "mmuser"
 		default:
 			return "", "", newErrInvalidDBType(dbType)
 		}
 
-		connectionString = fmt.Sprintf(template, rootUser, port, "")
+		var tempConn string
+		if dbType == model.PostgresDBType {
+			tempConn = fmt.Sprintf(template, rootUser, port, "", sslmode)
+		} else {
+			tempConn = fmt.Sprintf(template, rootUser, port, "", sslmode)
+		}
 
-		// create a new database each run
-		sqlDB, err := sql.Open(dbType, connectionString)
+		sqlDB, err := sql.Open(dbType, tempConn)
 		if err != nil {
 			return "", "", fmt.Errorf("cannot connect to %s database: %w", dbType, err)
 		}
 		defer sqlDB.Close()
 
-		err = sqlDB.Ping()
-		if err != nil {
+		if err = sqlDB.Ping(); err != nil {
 			return "", "", fmt.Errorf("cannot ping %s database: %w", dbType, err)
 		}
 
 		dbName = "testdb_" + utils.NewID(utils.IDTypeNone)[:8]
-		_, err = sqlDB.Exec(fmt.Sprintf("CREATE DATABASE %s;", dbName))
-		if err != nil {
+		if _, err := sqlDB.Exec(fmt.Sprintf("CREATE DATABASE %s;", dbName)); err != nil {
 			return "", "", fmt.Errorf("cannot create %s database %s: %w", dbType, dbName, err)
 		}
 
 		if dbType != model.PostgresDBType {
-			_, err = sqlDB.Exec(fmt.Sprintf("GRANT ALL PRIVILEGES ON %s.* TO mmuser;", dbName))
-			if err != nil {
+			if _, err := sqlDB.Exec(fmt.Sprintf("GRANT ALL PRIVILEGES ON %s.* TO mmuser;", dbName)); err != nil {
 				return "", "", fmt.Errorf("cannot grant permissions on %s database %s: %w", dbType, dbName, err)
 			}
 		}
 
-		connectionString = fmt.Sprintf(template, "mmuser", port, dbName)
+		if dbType == model.PostgresDBType {
+			connectionString = fmt.Sprintf(template, "mmuser", port, dbName, sslmode)
+		} else {
+			connectionString = fmt.Sprintf(template, "mmuser", port, dbName, sslmode)
+		}
 	} else {
-		// mysql or postgres need a DSN (connection string)
+		// Fall back to raw DSN from environment
 		connectionString = strings.TrimSpace(os.Getenv("FOCALBOARD_STORE_TEST_CONN_STRING"))
 	}
 

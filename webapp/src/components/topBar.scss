@@ -1,7 +1,7 @@
-@import '../styles/z-index';
+@use '../styles/z-index';
 
 .TopBar {
-    @include z-index(top-bar);
+    @include z-index.z-index(top-bar);
     position: absolute;
     top: 8px;
     right: 32px;

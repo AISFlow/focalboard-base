@@ -72,7 +72,7 @@ const CheckboxElement = (props: Props) => {
                     }
 
                     if (block.title !== title) {
-                        await mutator.changeBlockTitle(block.boardId, block.id, block.title, title, intl.formatMessage({id: 'ContentBlock.editCardCheckboxText', defaultMessage: 'edit card text'}))
+                        await mutator.changeBlockTitle(block.boardId, block.id, block.title, title, intl.formatMessage({id: 'ContentBlock.editCardCheckboxText', defaultMessage: 'Edit checkbox text'}))
                         if (saveType === 'onEnter' && title !== '' && props.onAddElement) {
                             // Wait for the change to happen
                             setTimeout(props.onAddElement, 100)

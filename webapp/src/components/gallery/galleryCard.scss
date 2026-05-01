@@ -1,4 +1,4 @@
-@import '../../styles/z-index';
+@use '../../styles/z-index';
 
 .GalleryCard {
     position: relative;
@@ -27,7 +27,7 @@
     }
 
     .optionsMenu {
-        @include z-index(gallery-options-menu);
+        @include z-index.z-index(gallery-options-menu);
         background-color: rgb(var(--center-channel-bg-rgb));
         border-radius: var(--default-rad);
         display: none;

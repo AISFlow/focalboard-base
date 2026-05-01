@@ -1,7 +1,7 @@
-@import '../styles/z-index';
+@use '../styles/z-index';
 
 .FlashMessages {
-    @include z-index(flash-messages);
+    @include z-index.z-index(flash-messages);
     display: flex;
     align-items: center;
     justify-content: center;

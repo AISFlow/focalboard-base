@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 const merge = require('webpack-merge');
 
-const makeCommonConfig = require('./webpack.common.js');
+const makeCommonConfig = require('./webpack.common.js').default;
 
 const commonConfig = makeCommonConfig();
 

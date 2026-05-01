@@ -1,0 +1,12 @@
+onlyBuiltDependencies:
+  - '@parcel/watcher'
+  - '@swc/core'
+  - core-js
+  - core-js-pure
+  - cwebp-bin
+  - cypress
+  - esbuild
+  - gifsicle
+  - mozjpeg
+  - optipng-bin
+  - pngquant-bin

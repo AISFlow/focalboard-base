@@ -1,6 +1,6 @@
-@import 'typography';
-@import 'modifiers';
-@import 'z-index';
+@use 'typography';
+@use 'modifiers';
+@use 'z-index';
 
 html {
     height: 100%;
@@ -29,7 +29,7 @@ html {
 
     padding: 0;
     margin: 0;
-    font-family: 'Open Sans', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Pretendard Variable', Pretendard, Roboto, 'Noto Sans KR', 'Segoe UI', 'Malgun Gothic', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
     /* -webkit-font-smoothing: auto; */
     font-size: 14px;
     line-height: 24px;
@@ -210,7 +210,7 @@ html {
         width: 100%;
 
         &:hover {
-            @include z-index(block-hover);
+            @include z-index.z-index(block-hover);
             position: relative;
         }
 

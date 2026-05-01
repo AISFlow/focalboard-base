@@ -1,8 +1,8 @@
-@import '../styles/z-index';
+@use '../styles/z-index';
 
 .confirmation-dialog-box {
     .dialog {
-        @include z-index(confirmation-dialog-box);
+        @include z-index.z-index(confirmation-dialog-box);
 
         > .toolbar {
             position: absolute;

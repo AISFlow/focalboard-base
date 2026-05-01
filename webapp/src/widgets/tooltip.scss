@@ -1,4 +1,4 @@
-@import '../styles/z-index';
+@use '../styles/z-index';
 
 // Tooltip arrow width
 $tooltip-arrow-width: 6px;
@@ -7,7 +7,7 @@ $tooltop-horizontal-offset: 2px;
 $tooltop-vertical-offset: 2px;
 
 %hover-tooltip-body {
-    @include z-index(hover-tooltip-body);
+    @include z-index.z-index(hover-tooltip-body);
     position: absolute;
     content: attr(data-tooltip);
     padding: 2px 4px;
@@ -30,7 +30,7 @@ $tooltop-vertical-offset: 2px;
 }
 
 %hover-tooltip-arrow {
-    @include z-index(hover-tooltip-arrow);
+    @include z-index.z-index(hover-tooltip-arrow);
     content: '';
     position: absolute;
     width: 0;

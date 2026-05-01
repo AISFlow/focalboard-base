@@ -37,8 +37,8 @@ class Constants {
     static readonly titleColumnId = '__title'
     static readonly badgesColumnId = '__badges'
 
-    static readonly versionString = '7.12.0'
-    static readonly versionDisplayString = 'May 2023'
+    static readonly versionString = '8.0.0'
+    static readonly versionDisplayString = 'June 2024'
 
     static readonly archiveHelpPage = 'https://docs.mattermost.com/boards/migrate-to-boards.html'
     static readonly imports = [
@@ -160,6 +160,11 @@ class Constants {
             name: 'swedish',
             displayName: 'Svenska',
         },
+        {
+            code: 'ko',
+            name: 'korean',
+            displayName: '한국어',
+        },
     ]
 
     static readonly keyCodes: {[key: string]: [string, number]} = {
@@ -198,8 +203,6 @@ class Constants {
 
     static readonly globalTeamId = '0'
     static readonly noChannelID = '0'
-
-    static readonly myInsights = 'MY'
 
     static readonly SystemUserID = 'system'
 }

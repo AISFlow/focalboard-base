@@ -1,4 +1,4 @@
-@import '../../styles/z-index';
+@use '../../styles/z-index';
 
 .Sidebar {
     flex: 0 0 240px;
@@ -12,7 +12,7 @@
     padding: 24px 0 12px;
 
     &.hidden {
-        @include z-index(sidebar-hidden);
+        @include z-index.z-index(sidebar-hidden);
         position: absolute;
         top: 0;
         left: 0;

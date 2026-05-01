@@ -1,7 +1,7 @@
-@import '../styles/z-index';
+@use '../styles/z-index';
 
 .Modal {
-    @include z-index(modal);
+    @include z-index.z-index(modal);
     position: absolute;
     top: 25px;
     left: -240px;

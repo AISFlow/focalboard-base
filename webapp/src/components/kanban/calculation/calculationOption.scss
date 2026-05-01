@@ -1,4 +1,4 @@
-@import '../../../styles/z-index';
+@use '../../../styles/z-index';
 
 .KanbanCalculationOptions_CustomOption {
     color: rgba(var(--center-channel-color-rgb), 1);
@@ -43,7 +43,7 @@
     }
 
     .dropdown-submenu {
-        @include z-index(calculation-dropdown);
+        @include z-index.z-index(calculation-dropdown);
         position: fixed;
         overflow: auto;
         background: rgb(var(--center-channel-bg-rgb));

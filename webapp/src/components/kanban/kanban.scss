@@ -1,11 +1,11 @@
-@import '../../styles/z-index';
+@use '../../styles/z-index';
 
 .Kanban {
     overflow: auto;
     flex: 1;
 
     .octo-board-header {
-        @include z-index(kanban-board-header);
+        @include z-index.z-index(kanban-board-header);
         display: flex;
         flex-direction: row;
         width: max-content;

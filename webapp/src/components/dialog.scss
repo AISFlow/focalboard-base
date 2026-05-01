@@ -1,8 +1,8 @@
-@import '../styles/z-index';
+@use '../styles/z-index';
 
 .Dialog {
     &.dialog-back {
-        @include z-index(dialog-back);
+        @include z-index.z-index(dialog-back);
         position: fixed;
         top: 0;
         left: 0;
@@ -31,7 +31,7 @@
     }
 
     .backdrop {
-        @include z-index(dialog-backdrop);
+        @include z-index.z-index(dialog-backdrop);
         position: fixed;
         width: 100%;
         height: 100%;

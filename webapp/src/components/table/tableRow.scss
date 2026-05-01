@@ -1,4 +1,4 @@
-@import '../../styles/z-index';
+@use '../../styles/z-index';
 
 .TableRow {
     .open-button {
@@ -35,7 +35,7 @@
         }
 
         .action-cell {
-            @include z-index(table-row-action-cell);
+            @include z-index.z-index(table-row-action-cell);
             position: relative;
             align-items: center;
         }

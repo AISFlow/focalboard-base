@@ -1,7 +1,7 @@
-@import '../../styles/z-index';
+@use '../../styles/z-index';
 
 .NotificationBox {
-    @include z-index(notification-box);
+    @include z-index.z-index(notification-box);
     position: fixed;
     bottom: 52px;
     right: 32px;

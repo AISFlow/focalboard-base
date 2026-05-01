@@ -1,4 +1,4 @@
-@import '../styles/z-index';
+@use '../styles/z-index';
 
 .Workspace {
     flex: 1 1 auto;
@@ -8,7 +8,7 @@
     position: relative;
 
     > .mainFrame {
-        @include z-index(workspace-main-frame);
+        @include z-index.z-index(workspace-main-frame);
         position: relative;
         flex: 1 1 auto;
         display: flex;

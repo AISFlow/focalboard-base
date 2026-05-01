@@ -5,7 +5,7 @@ const path = require('path');
 const CopyPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
-const makeCommonConfig = require('./webpack.common.js');
+const makeCommonConfig = require('./webpack.common.js').default;
 
 const commonConfig = makeCommonConfig();
 

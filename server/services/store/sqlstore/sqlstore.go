@@ -10,10 +10,10 @@ import (
 
 	"github.com/mattermost/focalboard/server/model"
 	"github.com/mattermost/focalboard/server/services/store"
-	"github.com/mattermost/mattermost-plugin-api/cluster"
+	"github.com/mattermost/mattermost/server/public/pluginapi/cluster"
 
-	mmModel "github.com/mattermost/mattermost-server/v6/model"
-	"github.com/mattermost/mattermost-server/v6/shared/mlog"
+	mmModel "github.com/mattermost/mattermost/server/public/model"
+	"github.com/mattermost/mattermost/server/public/shared/mlog"
 )
 
 // SQLStore is a SQL database.
@@ -22,7 +22,7 @@ type SQLStore struct {
 	dbType           string
 	tablePrefix      string
 	connectionString string
-	isPlugin         bool
+	dbPingAttempts   int
 	isSingleUser     bool
 	logger           mlog.LoggerIFace
 	NewMutexFn       MutexFactory
@@ -38,19 +38,15 @@ type MutexFactory func(name string) (*cluster.Mutex, error)
 
 // New creates a new SQL implementation of the store.
 func New(params Params) (*SQLStore, error) {
-	if err := params.CheckValid(); err != nil {
-		return nil, err
-	}
-
 	params.Logger.Info("connectDatabase", mlog.String("dbType", params.DBType))
 	store := &SQLStore{
 		// TODO: add replica DB support too.
 		db:               params.DB,
 		dbType:           params.DBType,
+		dbPingAttempts:   params.DBPingAttempts,
 		tablePrefix:      params.TablePrefix,
 		connectionString: params.ConnectionString,
 		logger:           params.Logger,
-		isPlugin:         params.IsPlugin,
 		isSingleUser:     params.IsSingleUser,
 		NewMutexFn:       params.NewMutexFn,
 		servicesAPI:      params.ServicesAPI,
@@ -129,7 +125,7 @@ func (s *SQLStore) DBType() string {
 
 func (s *SQLStore) getQueryBuilder(db sq.BaseRunner) sq.StatementBuilderType {
 	builder := sq.StatementBuilder
-	if s.dbType == model.PostgresDBType || s.dbType == model.SqliteDBType {
+	if s.dbType == model.PostgresDBType || s.dbType == model.SqliteDBType || s.dbType == model.TursoDBType {
 		builder = builder.PlaceholderFormat(sq.Dollar)
 	}
 
@@ -140,14 +136,14 @@ func (s *SQLStore) escapeField(fieldName string) string { //nolint:unparam
 	if s.dbType == model.MysqlDBType {
 		return "`" + fieldName + "`"
 	}
-	if s.dbType == model.PostgresDBType || s.dbType == model.SqliteDBType {
+	if s.dbType == model.PostgresDBType || s.dbType == model.SqliteDBType || s.dbType == model.TursoDBType {
 		return "\"" + fieldName + "\""
 	}
 	return fieldName
 }
 
 func (s *SQLStore) concatenationSelector(field string, delimiter string) string {
-	if s.dbType == model.SqliteDBType {
+	if s.dbType == model.SqliteDBType || s.dbType == model.TursoDBType {
 		return fmt.Sprintf("group_concat(%s)", field)
 	}
 	if s.dbType == model.PostgresDBType {
@@ -160,7 +156,7 @@ func (s *SQLStore) concatenationSelector(field string, delimiter string) string 
 }
 
 func (s *SQLStore) elementInColumn(column string) string {
-	if s.dbType == model.SqliteDBType || s.dbType == model.MysqlDBType {
+	if s.dbType == model.SqliteDBType || s.dbType == model.MysqlDBType || s.dbType == model.TursoDBType {
 		return fmt.Sprintf("instr(%s, ?) > 0", column)
 	}
 	if s.dbType == model.PostgresDBType {
@@ -171,10 +167,6 @@ func (s *SQLStore) elementInColumn(column string) string {
 
 func (s *SQLStore) getLicense(db sq.BaseRunner) *mmModel.License {
 	return nil
-}
-
-func (s *SQLStore) getCloudLimits(db sq.BaseRunner) (*mmModel.ProductLimits, error) {
-	return nil, nil
 }
 
 func (s *SQLStore) searchUserChannels(db sq.BaseRunner, teamID, userID, query string) ([]*mmModel.Channel, error) {
@@ -194,7 +186,7 @@ func (s *SQLStore) DBVersion() string {
 		row = s.db.QueryRow("SELECT VERSION()")
 	case model.PostgresDBType:
 		row = s.db.QueryRow("SHOW server_version")
-	case model.SqliteDBType:
+	case model.SqliteDBType, model.TursoDBType:
 		row = s.db.QueryRow("SELECT sqlite_version()")
 	default:
 		return ""

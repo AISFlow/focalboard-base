@@ -1,7 +1,10 @@
 package config
 
 import (
+	"fmt"
 	"log"
+	"os"
+	"strings"
 
 	"github.com/spf13/viper"
 )
@@ -9,6 +12,7 @@ import (
 const (
 	DefaultServerRoot = "http://localhost:8000"
 	DefaultPort       = 8000
+	DBPingAttempts    = 5
 )
 
 type AmazonS3Config struct {
@@ -31,6 +35,7 @@ type Configuration struct {
 	Port                     int               `json:"port" mapstructure:"port"`
 	DBType                   string            `json:"dbtype" mapstructure:"dbtype"`
 	DBConfigString           string            `json:"dbconfig" mapstructure:"dbconfig"`
+	DBPingAttempts           int               `json:"dbpingattempts" mapstructure:"dbpingattempts"`
 	DBTablePrefix            string            `json:"dbtableprefix" mapstructure:"dbtableprefix"`
 	UseSSL                   bool              `json:"useSSL" mapstructure:"useSSL"`
 	SecureCookie             bool              `json:"secureCookie" mapstructure:"secureCookie"`
@@ -78,8 +83,11 @@ func ReadConfigFile(configFilePath string) (*Configuration, error) {
 	}
 
 	viper.SetEnvPrefix("focalboard")
-	viper.AutomaticEnv() // read config values from env like FOCALBOARD_SERVERROOT=...
+	viper.AutomaticEnv()
+
+	// Default configuration values
 	viper.SetDefault("ServerRoot", DefaultServerRoot)
+	viper.SetDefault("DBPingAttempts", DBPingAttempts)
 	viper.SetDefault("Port", DefaultPort)
 	viper.SetDefault("DBType", "sqlite3")
 	viper.SetDefault("DBConfigString", "./focalboard.db")
@@ -97,27 +105,79 @@ func ReadConfigFile(configFilePath string) (*Configuration, error) {
 	viper.SetDefault("EnableLocalMode", false)
 	viper.SetDefault("LocalModeSocketLocation", "/var/tmp/focalboard_local.socket")
 	viper.SetDefault("EnablePublicSharedBoards", false)
-	viper.SetDefault("FeatureFlags", map[string]string{})
 	viper.SetDefault("AuthMode", "native")
 	viper.SetDefault("NotifyFreqCardSeconds", 120)    // 2 minutes after last card edit
 	viper.SetDefault("NotifyFreqBoardSeconds", 86400) // 1 day after last card edit
 	viper.SetDefault("EnableDataRetention", false)
+	viper.SetDefault("FeatureFlags", map[string]string{})
 	viper.SetDefault("DataRetentionDays", 365) // 1 year is default
 	viper.SetDefault("PrometheusAddress", "")
 	viper.SetDefault("TeammateNameDisplay", "username")
 	viper.SetDefault("ShowEmailAddress", false)
 	viper.SetDefault("ShowFullName", false)
 
-	err := viper.ReadInConfig() // Find and read the config file
-	if err != nil {             // Handle errors reading the config file
+	if err := viper.ReadInConfig(); err != nil {
 		return nil, err
 	}
 
-	configuration := Configuration{}
-
-	err = viper.Unmarshal(&configuration)
-	if err != nil {
+	var configuration Configuration
+	if err := viper.Unmarshal(&configuration); err != nil {
 		return nil, err
+	}
+
+	getEnv := func(primary, fallback string, defaultVal string) string {
+		val := strings.TrimSpace(os.Getenv(primary))
+		if val != "" {
+			return val
+		}
+		val = strings.TrimSpace(os.Getenv(fallback))
+		if val != "" {
+			return val
+		}
+		return defaultVal
+	}
+
+	sslmode := getEnv("FOCALBOARD_DB_SSLMODE", "DB_SSLMODE", "disable")
+	sslrootcert := getEnv("FOCALBOARD_DB_SSLROOTCERT", "DB_SSLROOTCERT", "")
+	sslcert := getEnv("FOCALBOARD_DB_SSLCERT", "DB_SSLCERT", "")
+	sslkey := getEnv("FOCALBOARD_DB_SSLKEY", "DB_SSLKEY", "")
+
+	// PostgreSQL
+	if configuration.DBType == "postgres" {
+		appendParam := func(key, value string) {
+			if value == "" {
+				return
+			}
+			sep := "?"
+			if strings.Contains(configuration.DBConfigString, "?") {
+				sep = "&"
+			}
+			if !strings.Contains(configuration.DBConfigString, key+"=") {
+				configuration.DBConfigString += fmt.Sprintf("%s%s=%s", sep, key, value)
+			}
+		}
+
+		appendParam("sslmode", sslmode)
+		appendParam("sslrootcert", sslrootcert)
+		appendParam("sslcert", sslcert)
+		appendParam("sslkey", sslkey)
+	}
+
+	// MySQL
+	if configuration.DBType == "mysql" {
+		appendParam := func(key, value string) {
+			if value == "" {
+				return
+			}
+			sep := "?"
+			if strings.Contains(configuration.DBConfigString, "?") {
+				sep = "&"
+			}
+			if !strings.Contains(configuration.DBConfigString, key+"=") {
+				configuration.DBConfigString += fmt.Sprintf("%s%s=%s", sep, key, value)
+			}
+		}
+		appendParam("tls", sslmode)
 	}
 
 	log.Println("readConfigFile")

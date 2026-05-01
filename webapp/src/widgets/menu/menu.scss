@@ -1,7 +1,7 @@
-@import '../../styles/z-index';
+@use '../../styles/z-index';
 
 .Menu.noselect {
-    @include z-index(menu);
+    @include z-index.z-index(menu);
     display: flex;
     flex-direction: column;
     position: absolute;

@@ -1,4 +1,4 @@
-@import '../styles/z-index';
+@use '../styles/z-index';
 
 .CenterPanel {
     flex: 1 1 auto;
@@ -41,7 +41,7 @@
     }
 
     > .top-head {
-        @include z-index(center-panel);
+        @include z-index.z-index(center-panel);
         position: sticky;
         top: 0;
         left: 0;

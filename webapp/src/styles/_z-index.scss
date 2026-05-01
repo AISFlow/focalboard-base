@@ -1,3 +1,4 @@
+@use 'sass:map';
 // Keep in descending order to aid in visual grepping
 //
 // Usage:
@@ -41,7 +42,7 @@ $z-index: (
 );
 
 @function z-index($key) {
-    @return map-get($z-index, $key);
+    @return map.get($z-index, $key);
 }
 
 @mixin z-index($key) {

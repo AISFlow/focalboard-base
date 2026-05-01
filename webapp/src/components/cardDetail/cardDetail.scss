@@ -1,4 +1,4 @@
-@import '../../styles/z-index';
+@use '../../styles/z-index';
 
 .CardDetail {
     .title {
@@ -74,7 +74,7 @@
     }
 
     .ValueSelector__menu {
-        @include z-index(card-value-selector-menu);
+        @include z-index.z-index(card-value-selector-menu);
         max-width: 100%;
 
         .value-menu-option {

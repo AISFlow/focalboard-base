@@ -1,5 +1,5 @@
 
-@import '../../styles/z-index';
+@use '../../styles/z-index';
 
 .ShareBoardDialog {
     .dialog {
@@ -33,7 +33,7 @@
         .tab-item {
             margin-right: 12px;
             display: flex;
-            font-family: Metropolis, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Pretendard Variable', Pretendard, Roboto, 'Noto Sans KR', 'Segoe UI', 'Malgun Gothic', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
             font-size: 16px;
             background-color: transparent;
             border: 0;
@@ -152,7 +152,7 @@
         width: 100%;
 
         i {
-            @include z-index(share-board-element);
+            @include z-index.z-index(share-board-element);
             color: rgba(var(--center-channel-color-rgb), 0.64);
             position: relative;
             font-size: 18px;

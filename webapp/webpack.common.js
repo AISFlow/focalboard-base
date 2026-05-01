@@ -51,7 +51,12 @@ function makeCommonConfig() {
                     use: [
                         'style-loader',
                         'css-loader',
-                        'sass-loader',
+                        {
+                            loader: 'sass-loader',
+                            options: {
+                                implementation: require('sass'),
+                            },
+                        },
                     ],
                 },
                 {
@@ -103,7 +108,8 @@ function makeCommonConfig() {
         entry: ['./src/main.tsx', './src/userSettings.ts'],
         output: {
             library: 'Focalboard',
-            filename: 'static/[name].js',
+            // filename: 'static/[name].js',
+            filename: 'static/[name].[contenthash].js',
             path: outpath,
         },
     };

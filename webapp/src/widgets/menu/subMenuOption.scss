@@ -1,4 +1,4 @@
-@import '../../styles/z-index';
+@use '../../styles/z-index';
 
 .Menu .menu-options .SubMenuOption {
     &.menu-option {
@@ -10,7 +10,7 @@
     position: relative;
 
     .SubMenu {
-        @include z-index(sub-menu-option-sub-menu);
+        @include z-index.z-index(sub-menu-option-sub-menu);
         position: absolute;
         min-width: 180px;
         background-color: rgb(var(--center-channel-bg-rgb));

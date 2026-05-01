@@ -1,7 +1,7 @@
-@import '../../styles/z-index';
+@use '../../styles/z-index';
 
 .BoardTemplateSelector__container {
-    @include z-index(modal-permissions-label);
+    @include z-index.z-index(modal-permissions-label);
     position: fixed;
     top: 0;
     left: 0;
@@ -37,7 +37,7 @@
 }
 
 .BoardTemplateSelector {
-    @include z-index(board-template-selector);
+    @include z-index.z-index(board-template-selector);
     position: relative;
     background-color: rgb(var(--center-channel-bg-rgb));
     border: 1px solid rgba(var(--center-channel-color-rgb), 0.16);
